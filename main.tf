@@ -1,31 +1,17 @@
-# module "image" {
-#   source   = "./image"
-#   image_in = var.image
-# }
-
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-  name = "tf-week19-vpc"
-  cidr = var.cidr_block
+  name   = "tf-week19-vpc"
+  cidr   = var.cidr_block
 
-  azs             = ["us-east-1a", "us-east-1b"]
-  private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
-  public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
+  azs             = var.azs
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
 
   tags = {
     Terraform   = "true"
     Environment = "dev"
   }
 }
-
-# module "network" {
-#   source                     = "./network"
-#   name                       = var.vpc_name
-#   cidr_block_in              = var.cidr_block
-#   availability_zones_in      = var.availability_zones
-#   public_sbn_cidr_ranges_in  = var.public_sbn_cidr_ranges
-#   private_sbn_cidr_ranges_in = var.private_sbn_cidr_ranges
-# }
 
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "tf-week19-ecs-cluster"
@@ -39,12 +25,12 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_cp" {
   cluster_name = aws_ecs_cluster.ecs_cluster.name
 
-  capacity_providers = ["FARGATE"]
+  capacity_providers = ["FARGATE_SPOT"]
 
   default_capacity_provider_strategy {
     base              = 1
     weight            = 100
-    capacity_provider = "FARGATE"
+    capacity_provider = "FARGATE_SPOT"
   }
 }
 
