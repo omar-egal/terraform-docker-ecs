@@ -16,6 +16,14 @@ variable "region" {
   default     = "us-east-1"
 }
 
+variable "aws_access_key" {
+  sensitive = true
+}
+
+variable "aws_secret_access_key" {
+  sensitive = true
+}
+
 variable "cidr_block" {
   type        = string
   description = "The VPC CIDR range"

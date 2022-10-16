@@ -1,6 +1,6 @@
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-  name   = "tf-week19-vpc"
+  name   = "tf-week-19-vpc"
   cidr   = var.cidr_block
 
   azs             = var.azs
@@ -35,12 +35,37 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_cp" {
 }
 
 module "ecs-fargate" {
-  source              = "cn-terraform/ecs-fargate/aws"
-  version             = "2.0.47"
-  container_image     = var.image
-  container_name      = "centos_container"
-  name_prefix         = "tf-week19-ecs"
-  private_subnets_ids = module.vpc.private_subnets
-  public_subnets_ids  = module.vpc.public_subnets
-  vpc_id              = module.vpc.vpc_id
+  source  = "umotif-public/ecs-fargate/aws"
+  version = "~> 6.1.0"
+
+  name_prefix        = "tf-ecs-fargate-week19"
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnets
+
+  cluster_id = aws_ecs_cluster.ecs_cluster.id
+
+  task_container_image   = var.image
+  task_definition_cpu    = 256
+  task_definition_memory = 512
+
+  task_container_port             = 80
+  task_container_assign_public_ip = true
+  load_balanced = false
+
+  target_groups = [
+    {
+      target_group_name = "tf-fargate-week19-tg"
+      container_port    = 80
+    }
+  ]
+
+  health_check = {
+    port = "traffic-port"
+    path = "/"
+  }
+
+  tags = {
+    Environment = "test"
+    Project     = "Test"
+  }
 }
